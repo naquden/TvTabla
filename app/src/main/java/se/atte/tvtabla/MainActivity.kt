@@ -14,33 +14,17 @@
 
 package se.atte.tvtabla
 
-import android.app.Activity
 import android.os.Bundle
-import okhttp3.OkHttpClient
-import okhttp3.logging.HttpLoggingInterceptor
-import retrofit2.Retrofit
-import retrofit2.converter.jackson.JacksonConverterFactory
+import androidx.fragment.app.FragmentActivity
 
 /**
  * Loads [MainFragment].
  */
-class MainActivity : Activity() {
+class MainActivity : FragmentActivity() {
 
-    val BASE_URL = "http://json.xmltv.se"
-
-    val retrofit = Retrofit.Builder()
-        .baseUrl(BASE_URL)
-        .addConverterFactory(JacksonConverterFactory.create())
-        .client(
-            OkHttpClient.Builder()
-                .addInterceptor(
-                    HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BODY)
-                )
-                .build()
-        )
-        .build()
-
-    val downloadService = retrofit.create(DownloadService::class.java)
+//    val vm by lazy {
+//        getViewModel { ChannelViewModel()}
+//    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

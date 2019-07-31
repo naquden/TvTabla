@@ -27,6 +27,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.core.app.ActivityOptionsCompat
 import androidx.core.content.ContextCompat
+import androidx.fragment.app.FragmentActivity
 import androidx.leanback.app.BackgroundManager
 import androidx.leanback.app.BrowseFragment
 import androidx.leanback.widget.*
@@ -34,12 +35,7 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.drawable.GlideDrawable
 import com.bumptech.glide.request.animation.GlideAnimation
 import com.bumptech.glide.request.target.SimpleTarget
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
-import se.atte.tvtabla.channel.Channel
 import se.atte.tvtabla.channel.ChannelDateInfo
-import se.atte.tvtabla.dto.ChannelDateInfoDto
 import se.atte.tvtabla.template.*
 import java.util.*
 
@@ -55,15 +51,24 @@ class MainFragment : BrowseFragment() {
     private var mBackgroundTimer: Timer? = null
     private var mBackgroundUri: String? = null
 
+    private lateinit var viewModel : ChannelViewModel
+
+    fun getMainActivity(): FragmentActivity {
+        return activity as FragmentActivity
+    }
+
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         Log.i(TAG, "onCreate")
         super.onActivityCreated(savedInstanceState)
+
+        viewModel = getMainActivity().getViewModel()
+        Log.d("atte2", "viewmodel: " + viewModel)
 
         prepareBackgroundManager()
 
         setupUIElements()
 
-        loadChannelInfo()
+        viewModel.loadChannelInfo()
 
         setupEventListeners()
     }
@@ -95,36 +100,6 @@ class MainFragment : BrowseFragment() {
         searchAffordanceColor = ContextCompat.getColor(context, R.color.search_opaque)
     }
 
-    fun loadChannelInfo() {
-        val mainActivity = context as MainActivity
-        val downloadService = mainActivity.downloadService;
-        val cal = Calendar.getInstance()
-        val channels = getFavChannels()
-        for (channel in channels) {
-            Log.d("atte2", "download channel info for: " + channel.id)
-            val call = downloadService.get(channel.parseChannelId(cal))
-            call.enqueue(object : Callback<ChannelDateInfoDto> {
-                override fun onResponse(call: Call<ChannelDateInfoDto>, dateInfoDto: Response<ChannelDateInfoDto>) {
-                    Log.d("atte2", "onResponse")
-                    val channelDateInfoDto = dateInfoDto.body()
-                    if (dateInfoDto.isSuccessful && channelDateInfoDto != null) {
-                        Log.d("atte2", "response.isSuccessful")
-                        val channelDateInfo = ChannelDateInfo(channelDateInfoDto)
-                        loadUiWithChannelDateInfo(channelDateInfo)
-                    }
-                }
-
-                override fun onFailure(call: Call<ChannelDateInfoDto>, t: Throwable) {
-                    Log.d("atte2", "onFailure: ", t)
-                }
-            })
-        }
-    }
-
-    // TODO: have user selected channels
-    fun getFavChannels(): List<Channel> {
-        return listOf(*Channel.values())
-    }
 
     fun loadUiWithChannelDateInfo(vararg channelInfoList: ChannelDateInfo) {
         val rowsAdapter = ArrayObjectAdapter(ListRowPresenter())
