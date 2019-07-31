@@ -12,7 +12,7 @@
  * the License.
  */
 
-package se.atte.tvtabla
+package se.atte.tvtabla.template
 
 import java.io.Serializable
 

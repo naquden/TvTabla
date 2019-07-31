@@ -12,16 +12,16 @@
  * the License.
  */
 
-package se.atte.tvtabla
+package se.atte.tvtabla.template
 
 import android.graphics.drawable.Drawable
-import androidx.leanback.widget.ImageCardView
-import androidx.leanback.widget.Presenter
-import androidx.core.content.ContextCompat
 import android.util.Log
 import android.view.ViewGroup
-
-import com.bumptech.glide.Glide
+import androidx.core.content.ContextCompat
+import androidx.leanback.widget.ImageCardView
+import androidx.leanback.widget.Presenter
+import se.atte.tvtabla.R
+import se.atte.tvtabla.channel.ChannelDateInfo
 import kotlin.properties.Delegates
 
 /**
@@ -54,20 +54,23 @@ class CardPresenter : Presenter() {
     }
 
     override fun onBindViewHolder(viewHolder: Presenter.ViewHolder, item: Any) {
-        val movie = item as Movie
+        val programme = item as ChannelDateInfo.Programme
         val cardView = viewHolder.view as ImageCardView
 
         Log.d(TAG, "onBindViewHolder")
-        if (movie.cardImageUrl != null) {
-            cardView.titleText = movie.title
-            cardView.contentText = movie.studio
-            cardView.setMainImageDimensions(CARD_WIDTH, CARD_HEIGHT)
-            Glide.with(viewHolder.view.context)
-                .load(movie.cardImageUrl)
-                .centerCrop()
-                .error(mDefaultCardImage)
-                .into(cardView.mainImageView)
-        }
+//        if (movie.cardImageUrl != null) {
+            cardView.titleText = programme.title
+            cardView.contentText = programme.channel
+            cardView.setMainImageDimensions(
+                CARD_WIDTH,
+                CARD_HEIGHT
+            )
+//            Glide.with(viewHolder.view.context)
+//                .load(movie.cardImageUrl)
+//                .centerCrop()
+//                .error(mDefaultCardImage)
+//                .into(cardView.mainImageView)
+//        }
     }
 
     override fun onUnbindViewHolder(viewHolder: Presenter.ViewHolder) {

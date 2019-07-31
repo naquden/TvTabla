@@ -14,40 +14,34 @@
 
 package se.atte.tvtabla
 
-import java.util.Collections
-import java.util.Timer
-import java.util.TimerTask
-
 import android.content.Intent
 import android.graphics.Color
 import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.os.Handler
-import androidx.leanback.app.BackgroundManager
-import androidx.leanback.app.BrowseFragment
-import androidx.leanback.widget.ArrayObjectAdapter
-import androidx.leanback.widget.HeaderItem
-import androidx.leanback.widget.ImageCardView
-import androidx.leanback.widget.ListRow
-import androidx.leanback.widget.ListRowPresenter
-import androidx.leanback.widget.OnItemViewClickedListener
-import androidx.leanback.widget.OnItemViewSelectedListener
-import androidx.leanback.widget.Presenter
-import androidx.leanback.widget.Row
-import androidx.leanback.widget.RowPresenter
-import androidx.core.app.ActivityOptionsCompat
-import androidx.core.content.ContextCompat
 import android.util.DisplayMetrics
 import android.util.Log
 import android.view.Gravity
 import android.view.ViewGroup
 import android.widget.TextView
 import android.widget.Toast
-
+import androidx.core.app.ActivityOptionsCompat
+import androidx.core.content.ContextCompat
+import androidx.leanback.app.BackgroundManager
+import androidx.leanback.app.BrowseFragment
+import androidx.leanback.widget.*
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.drawable.GlideDrawable
 import com.bumptech.glide.request.animation.GlideAnimation
 import com.bumptech.glide.request.target.SimpleTarget
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
+import se.atte.tvtabla.channel.Channel
+import se.atte.tvtabla.channel.ChannelDateInfo
+import se.atte.tvtabla.dto.ChannelDateInfoDto
+import se.atte.tvtabla.template.*
+import java.util.*
 
 /**
  * Loads a grid of cards with movies to browse.
@@ -69,7 +63,7 @@ class MainFragment : BrowseFragment() {
 
         setupUIElements()
 
-        loadRows()
+        loadChannelInfo()
 
         setupEventListeners()
     }
@@ -99,6 +93,53 @@ class MainFragment : BrowseFragment() {
         brandColor = ContextCompat.getColor(context, R.color.fastlane_background)
         // set search icon color
         searchAffordanceColor = ContextCompat.getColor(context, R.color.search_opaque)
+    }
+
+    fun loadChannelInfo() {
+        val mainActivity = context as MainActivity
+        val downloadService = mainActivity.downloadService;
+        val cal = Calendar.getInstance()
+        val channels = getFavChannels()
+        for (channel in channels) {
+            Log.d("atte2", "download channel info for: " + channel.id)
+            val call = downloadService.get(channel.parseChannelId(cal))
+            call.enqueue(object : Callback<ChannelDateInfoDto> {
+                override fun onResponse(call: Call<ChannelDateInfoDto>, dateInfoDto: Response<ChannelDateInfoDto>) {
+                    Log.d("atte2", "onResponse")
+                    val channelDateInfoDto = dateInfoDto.body()
+                    if (dateInfoDto.isSuccessful && channelDateInfoDto != null) {
+                        Log.d("atte2", "response.isSuccessful")
+                        val channelDateInfo = ChannelDateInfo(channelDateInfoDto)
+                        loadUiWithChannelDateInfo(channelDateInfo)
+                    }
+                }
+
+                override fun onFailure(call: Call<ChannelDateInfoDto>, t: Throwable) {
+                    Log.d("atte2", "onFailure: ", t)
+                }
+            })
+        }
+    }
+
+    // TODO: have user selected channels
+    fun getFavChannels(): List<Channel> {
+        return listOf(*Channel.values())
+    }
+
+    fun loadUiWithChannelDateInfo(vararg channelInfoList: ChannelDateInfo) {
+        val rowsAdapter = ArrayObjectAdapter(ListRowPresenter())
+        val cardPresenter = CardPresenter()
+
+        for (channelDateInfo in channelInfoList) {
+            val listRowAdapter = ArrayObjectAdapter(cardPresenter)
+            for (programme in channelDateInfo.programmes) {
+                listRowAdapter.add(programme)
+            }
+            val header = HeaderItem(channelDateInfo.getDisplayName())
+            rowsAdapter.add(ListRow(header, listRowAdapter))
+        }
+
+        adapter = rowsAdapter
     }
 
     private fun loadRows() {

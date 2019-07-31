@@ -12,7 +12,7 @@
  * the License.
  */
 
-package se.atte.tvtabla
+package se.atte.tvtabla.template
 
 import android.content.Context
 import android.content.Intent
@@ -44,6 +44,8 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.drawable.GlideDrawable
 import com.bumptech.glide.request.animation.GlideAnimation
 import com.bumptech.glide.request.target.SimpleTarget
+import se.atte.tvtabla.MainActivity
+import se.atte.tvtabla.R
 
 import java.util.Collections
 
@@ -103,8 +105,12 @@ class VideoDetailsFragment : DetailsFragment() {
         Log.d(TAG, "doInBackground: " + mSelectedMovie?.toString())
         val row = DetailsOverviewRow(mSelectedMovie)
         row.imageDrawable = ContextCompat.getDrawable(context, R.drawable.default_background)
-        val width = convertDpToPixel(context, DETAIL_THUMB_WIDTH)
-        val height = convertDpToPixel(context, DETAIL_THUMB_HEIGHT)
+        val width = convertDpToPixel(context,
+            DETAIL_THUMB_WIDTH
+        )
+        val height = convertDpToPixel(context,
+            DETAIL_THUMB_HEIGHT
+        )
         Glide.with(context)
             .load(mSelectedMovie?.cardImageUrl)
             .centerCrop()

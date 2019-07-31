@@ -12,7 +12,7 @@
  * the License.
  */
 
-package se.atte.tvtabla
+package se.atte.tvtabla.template
 
 import android.net.Uri
 import android.os.Bundle

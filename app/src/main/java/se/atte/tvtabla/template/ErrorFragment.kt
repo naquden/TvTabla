@@ -11,11 +11,12 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package se.atte.tvtabla
+package se.atte.tvtabla.template
 
 import android.os.Bundle
 import androidx.core.content.ContextCompat
 import android.view.View
+import se.atte.tvtabla.R
 
 /**
  * This class demonstrates how to extend [androidx.leanback.app.ErrorFragment].

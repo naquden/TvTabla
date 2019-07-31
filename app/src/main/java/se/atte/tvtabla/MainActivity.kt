@@ -16,18 +16,10 @@ package se.atte.tvtabla
 
 import android.app.Activity
 import android.os.Bundle
-import android.util.Log
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.jackson.JacksonConverterFactory
-import se.atte.tvtabla.channel.ChannelDateInfo
-import se.atte.tvtabla.channel.ChannelInfoDownloader
-import se.atte.tvtabla.dto.ChannelDateInfoDto
-import java.util.*
 
 /**
  * Loads [MainFragment].
@@ -54,33 +46,7 @@ class MainActivity : Activity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        val cal = Calendar.getInstance()
-        val channels = getFavChannels()
-        for (channel in channels) {
-            val call = downloadService.get(channel.parseChannelId(cal))
-            call.enqueue(object : Callback<ChannelDateInfoDto> {
-                override fun onResponse(call: Call<ChannelDateInfoDto>, dateInfoDto: Response<ChannelDateInfoDto>) {
-                    Log.d("atte2", "onResponse")
-                    val channelDateInfoDto = dateInfoDto.body()
-                    if (dateInfoDto.isSuccessful && channelDateInfoDto != null) {
-                        Log.d("atte2", "response.isSuccessful")
-                        val channelDateInfo = ChannelDateInfo(channelDateInfoDto)
-                        loadUiWithChannelDateInfo(channelDateInfo)
-                    }
-                }
-
-                override fun onFailure(call: Call<ChannelDateInfoDto>, t: Throwable) {
-                    Log.d("atte2", "onFailure")
-                }
-            })
-        }
-    }
-
-    fun getFavChannels(): List<ChannelInfoDownloader.ChannelId> {
-        return listOf(ChannelInfoDownloader.ChannelId.TV4)
-    }
-
-    fun loadUiWithChannelDateInfo(vararg channelInfoList: ChannelDateInfo) {
 
     }
+
 }

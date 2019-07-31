@@ -12,7 +12,7 @@
  * the License.
  */
 
-package se.atte.tvtabla
+package se.atte.tvtabla.template
 
 import android.os.Bundle
 import androidx.fragment.app.FragmentActivity

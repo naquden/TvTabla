@@ -15,10 +15,10 @@ class XmltvReponseDesirializer : StdDeserializer<ChannelDateInfoDto>(ChannelDate
         val root = tree.get("jsontv") as ObjectNode
         val programArray = root.get("programme") as ArrayNode
 
-        var programms = mutableListOf<ProgrammeDto>()
+        var programms = mutableListOf<ProgrammeDto?>()
         for (program in programArray) {
-            val title = program.get("title").get("sv").asText()
-            val desc = program.get("desc").get("sv").asText()
+            val title = program.get("title")?.get("sv")?.asText() ?: ""
+            val desc = program.get("desc")?.get("sv")?.asText() ?: ""
             val start = program.get("start").asLong()
             var stop = program.get("stop").asLong()
 
