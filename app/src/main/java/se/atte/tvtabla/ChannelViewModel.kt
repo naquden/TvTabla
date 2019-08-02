@@ -64,7 +64,6 @@ class ChannelViewModel : ViewModel() {
             }
         }
 
-
         return result
     }
 

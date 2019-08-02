@@ -3,8 +3,18 @@ package se.atte.tvtabla.channel
 import java.util.*
 
 enum class Channel(val id: String, val displayName: String) {
+    SVT1("svt1hd.svt.se", "SVT 1"),
+    SVT2("svt2hd.svt.se", "SVT 2"),
+    TV3("hd.tv3.se", "TV3"),
     TV4("hd.tv4.se", "TV4"),
-    SVT1("svt1hd.svt.se", "SVT 1");
+    TV5("hd.kanal5.se", "Kanal 5"),
+    TV6("hd.tv6.se", "TV6"),
+    TV7("sjuan.se", "sjuan"),
+    TV8("tv8.se", "8 an"),
+    TV9("hd.kanal9.se", "Kanal 9"),
+//    TV10("kanal10.se", "Kanal 10"), // NOT WORKING
+    TV11("tv11.sbstv.se", "Kanal 11"),
+    Tv12("hd.tv12.tv4.se", "Kanal 12");
 
     fun parseChannelId(cal: Calendar): String {
         val year = cal.get(Calendar.YEAR)
