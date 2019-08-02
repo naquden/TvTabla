@@ -31,12 +31,18 @@ import androidx.fragment.app.FragmentActivity
 import androidx.leanback.app.BackgroundManager
 import androidx.leanback.app.BrowseFragment
 import androidx.leanback.widget.*
+import androidx.lifecycle.Observer
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.drawable.GlideDrawable
 import com.bumptech.glide.request.animation.GlideAnimation
 import com.bumptech.glide.request.target.SimpleTarget
 import se.atte.tvtabla.channel.ChannelDateInfo
-import se.atte.tvtabla.template.*
+import se.atte.tvtabla.dto.ChannelDateInfoDto
+import se.atte.tvtabla.template.BrowseErrorActivity
+import se.atte.tvtabla.template.CardPresenter
+import se.atte.tvtabla.template.DetailsActivity
+import se.atte.tvtabla.template.Movie
+import se.atte.tvtabla.util.Resource
 import java.util.*
 
 /**
@@ -51,32 +57,42 @@ class MainFragment : BrowseFragment() {
     private var mBackgroundTimer: Timer? = null
     private var mBackgroundUri: String? = null
 
-    private lateinit var viewModel : ChannelViewModel
-
-    fun getMainActivity(): FragmentActivity {
-        return activity as FragmentActivity
-    }
+    private lateinit var viewModel: ChannelViewModel
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         Log.i(TAG, "onCreate")
         super.onActivityCreated(savedInstanceState)
 
-        viewModel = getMainActivity().getViewModel()
+        viewModel = (activity as FragmentActivity).getViewModel()
         Log.d("atte2", "viewmodel: " + viewModel)
 
         prepareBackgroundManager()
 
         setupUIElements()
 
-        viewModel.loadChannelInfo()
+        viewModel.loadChannelInfo().observe(activity as FragmentActivity,
+            Observer<Resource<List<ChannelDateInfoDto>>> { resource ->
+                if (resource?.data != null) {
+                    val list = mutableListOf<ChannelDateInfo>()
+                    for (dto in resource.data) {
+                        list.add(ChannelDateInfo(dto))
+                    }
+                    loadUiWithChannelDateInfo(list)
+                }
+            })
 
         setupEventListeners()
     }
 
+    override fun onResume() {
+        super.onResume()
+        sortProgramsByCurrentTime()
+    }
+
     override fun onDestroy() {
-        super.onDestroy()
         Log.d(TAG, "onDestroy: " + mBackgroundTimer?.toString())
         mBackgroundTimer?.cancel()
+        super.onDestroy()
     }
 
     private fun prepareBackgroundManager() {
@@ -91,7 +107,7 @@ class MainFragment : BrowseFragment() {
     private fun setupUIElements() {
         title = getString(R.string.browse_title)
         // over title
-        headersState = BrowseFragment.HEADERS_ENABLED
+        headersState = HEADERS_ENABLED
         isHeadersTransitionOnBackEnabled = true
 
         // set fastLane (or headers) background color
@@ -100,9 +116,9 @@ class MainFragment : BrowseFragment() {
         searchAffordanceColor = ContextCompat.getColor(context, R.color.search_opaque)
     }
 
-
-    fun loadUiWithChannelDateInfo(vararg channelInfoList: ChannelDateInfo) {
-        val rowsAdapter = ArrayObjectAdapter(ListRowPresenter())
+    fun loadUiWithChannelDateInfo(channelInfoList: List<ChannelDateInfo>) {
+        val listRowPresenter = ListRowPresenter()
+        val rowsAdapter = ArrayObjectAdapter(listRowPresenter)
         val cardPresenter = CardPresenter()
 
         for (channelDateInfo in channelInfoList) {
@@ -115,36 +131,41 @@ class MainFragment : BrowseFragment() {
         }
 
         adapter = rowsAdapter
+
+        mHandler.postDelayed({sortProgramsByCurrentTime()}, 1000)
     }
 
-    private fun loadRows() {
-        val list = MovieList.list
-
-        val rowsAdapter = ArrayObjectAdapter(ListRowPresenter())
-        val cardPresenter = CardPresenter()
-
-        for (i in 0 until NUM_ROWS) {
-            if (i != 0) {
-                Collections.shuffle(list)
-            }
-            val listRowAdapter = ArrayObjectAdapter(cardPresenter)
-            for (j in 0 until NUM_COLS) {
-                listRowAdapter.add(list[j % 5])
-            }
-            val header = HeaderItem(i.toLong(), MovieList.MOVIE_CATEGORY[i])
-            rowsAdapter.add(ListRow(header, listRowAdapter))
+    fun sortProgramsByCurrentTime() {
+        if (rowsFragment == null) {
+            return
         }
 
-        val gridHeader = HeaderItem(NUM_ROWS.toLong(), "PREFERENCES")
+        // TODO: store current selected item and set that last
 
-        val mGridPresenter = GridItemPresenter()
-        val gridRowAdapter = ArrayObjectAdapter(mGridPresenter)
-        gridRowAdapter.add(resources.getString(R.string.grid_view))
-        gridRowAdapter.add(getString(R.string.error_fragment))
-        gridRowAdapter.add(resources.getString(R.string.personal_settings))
-        rowsAdapter.add(ListRow(gridHeader, gridRowAdapter))
+        val channelIndexMap = mutableMapOf<Int, Int>()
+        // Calculate current program index for each channel
+        for (i in adapter.size() -1 downTo 0) {
+            val listRow = adapter.get(i) as ListRow
+            val index = getIndexForProgramDuringTime(System.currentTimeMillis() / 1000, listRow.adapter)
+            Log.d("atte2", "found current program on index: " + index)
+            channelIndexMap[i] = index
+        }
 
-        adapter = rowsAdapter
+        // Select the programs
+        for ((k,v ) in channelIndexMap) {
+            rowsFragment.setSelectedPosition(k, false, ListRowPresenter.SelectItemViewHolderTask(v))
+        }
+    }
+
+    fun getIndexForProgramDuringTime(timeInSeconds: Long, adapter: ObjectAdapter) : Int {
+        for (i in 0 until adapter.size()) {
+            val programme = adapter.get(i) as ChannelDateInfo.Programme
+            if (timeInSeconds < programme.stop && timeInSeconds > programme.start) {
+                return i
+            }
+        }
+
+        return 0
     }
 
     private fun setupEventListeners() {

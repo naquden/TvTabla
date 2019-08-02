@@ -11,7 +11,7 @@ class ChannelDateInfo {
         channelId = channelDateInfoDto.channelName
         programmes = mutableListOf()
         for (programmDto in channelDateInfoDto.programmeDtos) {
-            programmes.add(Programme(programmDto?.title, programmDto?.channel, programmDto?.start, programmDto?.stop))
+            programmes.add(Programme(programmDto?.title, programmDto?.channel, programmDto?.start!!, programmDto?.stop!!))
         }
     }
 
@@ -26,7 +26,7 @@ class ChannelDateInfo {
     data class Programme(
         var title: String?,
         var channel: String?,
-        var start: Long?,
-        var stop: Long?
+        var start: Long,
+        var stop: Long
     )
 }

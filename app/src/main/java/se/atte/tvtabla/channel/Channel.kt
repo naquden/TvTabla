@@ -11,7 +11,7 @@ enum class Channel(val id: String, val displayName: String) {
         val month = cal.get(Calendar.MONTH) + 1
         val day = cal.get(Calendar.DAY_OF_MONTH)
 
-        return String.format("%s_%d-%02d-%d.js.gz", id, year, month, day)
+        return String.format("%s_%d-%02d-%02d.js.gz", id, year, month, day)
     }
 
     companion object {
