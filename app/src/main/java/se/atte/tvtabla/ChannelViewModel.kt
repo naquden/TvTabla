@@ -32,7 +32,7 @@ class ChannelViewModel : ViewModel() {
 
     val downloadService = retrofit.create(DownloadService::class.java)
 
-    fun loadChannelInfo() : LiveData<Resource<List<ChannelDateInfoDto>>> {
+    fun loadChannelInfo(): LiveData<Resource<List<ChannelDateInfoDto>>> {
         val result = MediatorLiveData<Resource<List<ChannelDateInfoDto>>>()
         val loader = ChannelNetworkLoader()
 
@@ -49,10 +49,14 @@ class ChannelViewModel : ViewModel() {
 
         // Fetch all calls
         val channelNetworkLoaderResult = loader.load()
-        result.addSource(channelNetworkLoaderResult) {loaderResource ->
+        result.addSource(channelNetworkLoaderResult) { loaderResource ->
             when (loaderResource?.status) {
-                Resource.Status.LOADING -> {Log.d("atte3", "network result LOADING")}
-                Resource.Status.ERROR -> {Log.d("atte3", "network result ERROR")}
+                Resource.Status.LOADING -> {
+                    Log.d("atte3", "network result LOADING")
+                }
+                Resource.Status.ERROR -> {
+                    Log.d("atte3", "network result ERROR")
+                }
                 Resource.Status.SUCCESS -> {
                     Log.d("atte3", "network result SUCCESS")
                     result.postValue(Resource.success(loaderResource.data!!))

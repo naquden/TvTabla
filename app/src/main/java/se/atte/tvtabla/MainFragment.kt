@@ -29,7 +29,7 @@ import androidx.core.app.ActivityOptionsCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.FragmentActivity
 import androidx.leanback.app.BackgroundManager
-import androidx.leanback.app.BrowseFragment
+import androidx.leanback.app.BrowseSupportFragment
 import androidx.leanback.widget.*
 import androidx.lifecycle.Observer
 import com.bumptech.glide.Glide
@@ -48,7 +48,7 @@ import java.util.*
 /**
  * Loads a grid of cards with movies to browse.
  */
-class MainFragment : BrowseFragment() {
+class MainFragment : BrowseSupportFragment() {
 
     private val mHandler = Handler()
     private lateinit var mBackgroundManager: BackgroundManager
@@ -98,10 +98,10 @@ class MainFragment : BrowseFragment() {
     private fun prepareBackgroundManager() {
 
         mBackgroundManager = BackgroundManager.getInstance(activity)
-        mBackgroundManager.attach(activity.window)
-        mDefaultBackground = ContextCompat.getDrawable(context, R.drawable.default_background)
+        mBackgroundManager.attach(requireActivity().window)
+        mDefaultBackground = ContextCompat.getDrawable(requireContext(), R.drawable.default_background)
         mMetrics = DisplayMetrics()
-        activity.windowManager.defaultDisplay.getMetrics(mMetrics)
+        requireActivity().windowManager.defaultDisplay.getMetrics(mMetrics)
     }
 
     private fun setupUIElements() {
@@ -111,9 +111,9 @@ class MainFragment : BrowseFragment() {
         isHeadersTransitionOnBackEnabled = true
 
         // set fastLane (or headers) background color
-        brandColor = ContextCompat.getColor(context, R.color.fastlane_background)
+        brandColor = ContextCompat.getColor(requireContext(), R.color.fastlane_background)
         // set search icon color
-        searchAffordanceColor = ContextCompat.getColor(context, R.color.search_opaque)
+        searchAffordanceColor = ContextCompat.getColor(requireContext(), R.color.search_opaque)
     }
 
     fun loadUiWithChannelDateInfo(channelInfoList: List<ChannelDateInfo>) {
@@ -132,11 +132,11 @@ class MainFragment : BrowseFragment() {
 
         adapter = rowsAdapter
 
-        mHandler.postDelayed({sortProgramsByCurrentTime()}, 1000)
+        mHandler.postDelayed({ sortProgramsByCurrentTime() }, 1000)
     }
 
     fun sortProgramsByCurrentTime() {
-        if (rowsFragment == null) {
+        if (rowsSupportFragment == null) {
             return
         }
 
@@ -144,7 +144,7 @@ class MainFragment : BrowseFragment() {
 
         val channelIndexMap = mutableMapOf<Int, Int>()
         // Calculate current program index for each channel
-        for (i in adapter.size() -1 downTo 0) {
+        for (i in adapter.size() - 1 downTo 0) {
             val listRow = adapter.get(i) as ListRow
             val index = getIndexForProgramDuringTime(System.currentTimeMillis() / 1000, listRow.adapter)
             Log.d("atte2", "found current program on index: " + index)
@@ -152,12 +152,12 @@ class MainFragment : BrowseFragment() {
         }
 
         // Select the programs
-        for ((k,v ) in channelIndexMap) {
-            rowsFragment.setSelectedPosition(k, false, ListRowPresenter.SelectItemViewHolderTask(v))
+        for ((k, v) in channelIndexMap) {
+            rowsSupportFragment.setSelectedPosition(k, false, ListRowPresenter.SelectItemViewHolderTask(v))
         }
     }
 
-    fun getIndexForProgramDuringTime(timeInSeconds: Long, adapter: ObjectAdapter) : Int {
+    fun getIndexForProgramDuringTime(timeInSeconds: Long, adapter: ObjectAdapter): Int {
         for (i in 0 until adapter.size()) {
             val programme = adapter.get(i) as ChannelDateInfo.Programme
             if (timeInSeconds < programme.stop && timeInSeconds > programme.start) {
@@ -192,12 +192,11 @@ class MainFragment : BrowseFragment() {
                 intent.putExtra(DetailsActivity.MOVIE, item)
 
                 val bundle = ActivityOptionsCompat.makeSceneTransitionAnimation(
-                    activity,
+                    requireActivity(),
                     (itemViewHolder.view as ImageCardView).mainImageView,
                     DetailsActivity.SHARED_ELEMENT_NAME
-                )
-                    .toBundle()
-                activity.startActivity(intent, bundle)
+                ).toBundle()
+                requireContext().startActivity(intent, bundle)
             } else if (item is String) {
                 if (item.contains(getString(R.string.error_fragment))) {
                     val intent = Intent(context, BrowseErrorActivity::class.java)
@@ -259,7 +258,7 @@ class MainFragment : BrowseFragment() {
             view.layoutParams = ViewGroup.LayoutParams(GRID_ITEM_WIDTH, GRID_ITEM_HEIGHT)
             view.isFocusable = true
             view.isFocusableInTouchMode = true
-            view.setBackgroundColor(ContextCompat.getColor(context, R.color.default_background))
+            view.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.default_background))
             view.setTextColor(Color.WHITE)
             view.gravity = Gravity.CENTER
             return Presenter.ViewHolder(view)

@@ -22,15 +22,9 @@ import androidx.fragment.app.FragmentActivity
  */
 class MainActivity : FragmentActivity() {
 
-//    val vm by lazy {
-//        getViewModel { ChannelViewModel()}
-//    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-
-
     }
 
 }
